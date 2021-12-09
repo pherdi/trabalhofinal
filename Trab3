@@ -1,0 +1,304 @@
+
+R version 4.1.0 (2021-05-18) -- "Camp Pontanezen"
+Copyright (C) 2021 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin17.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[Workspace loaded from ~/Desktop/Trabalho final/.RData]
+
+> #'Trabalho final 
+> #'Fernanda Cunha 
+> 
+> #1 carregando pacotes
+> 
+> 
+> library(tidyverse)
+── Attaching packages ──────────────────────────────────────────────── tidyverse 1.3.1 ──
+✓ ggplot2 3.3.5     ✓ purrr   0.3.4
+✓ tibble  3.1.3     ✓ dplyr   1.0.7
+✓ tidyr   1.1.3     ✓ stringr 1.4.0
+✓ readr   2.0.1     ✓ forcats 0.5.1
+── Conflicts ─────────────────────────────────────────────────── tidyverse_conflicts() ──
+x dplyr::filter() masks stats::filter()
+x dplyr::lag()    masks stats::lag()
+> library(ggplot2)
+> library(dplyr)
+> library(car)
+Loading required package: carData
+
+Attaching package: ‘car’
+
+The following object is masked from ‘package:dplyr’:
+
+    recode
+
+The following object is masked from ‘package:purrr’:
+
+    some
+
+> library(scatterplot3d)
+> library(ggfortify)
+> 
+> 
+> 
+> #2 Importando dados 
+> 
+> dados <- read.csv("dados/dados.csv")
+> 
+> #3 Inspecionando o conjunto de dados
+> 
+> str(dados)
+'data.frame':	69 obs. of  20 variables:
+ $ File    : chr  "201_span_picnic" "202_span_picnic" "203_span_picnic" "205_span_picnic" ...
+ $ WC      : int  39 25 78 31 31 23 52 46 39 48 ...
+ $ Nodes   : int  25 21 43 21 22 17 25 26 25 28 ...
+ $ Edges   : int  38 24 77 30 30 22 51 45 38 47 ...
+ $ RE      : int  1 1 11 1 1 0 7 6 2 4 ...
+ $ PE      : int  1 1 12 1 2 2 9 6 3 5 ...
+ $ L1      : int  0 1 0 0 0 1 1 0 0 0 ...
+ $ L2      : int  0 0 1 0 1 2 2 0 1 1 ...
+ $ L3      : int  5 1 8 1 2 0 7 5 3 5 ...
+ $ LCC     : int  25 21 43 21 22 17 25 26 25 28 ...
+ $ LSC     : int  24 9 42 20 18 14 25 24 23 25 ...
+ $ ATD     : num  3.04 2.29 3.58 2.86 2.73 ...
+ $ Density : num  0.123 0.105 0.072 0.138 0.121 ...
+ $ Diameter: int  5 15 6 6 8 7 5 4 6 6 ...
+ $ ASP     : num  2.76 5.66 3.01 2.68 3.32 ...
+ $ CC      : num  0.237 0.0683 0.1853 0.0525 0.0364 ...
+ $ ospan   : int  27 43 46 30 48 30 39 48 41 43 ...
+ $ X       : logi  NA NA NA NA NA NA ...
+ $ simon   : num  28.76 4.72 42.57 24.56 35.82 ...
+ $ wpm     : logi  NA NA NA NA NA NA ...
+> 
+> # 
+> 
+> dadosLSC <- dados %>%
++   select(LSC,ospan,simon)%>%
++   droplevels()
+> 
+> 
+> #4 visualizacao grafica dos dados por meio de graficos de dispersao
+> 
+> ggplot(dados, aes(x = ospan, y = LSC)) +
++   geom_point(alpha = 0.5, outlier.size = 2) +
++   labs(x= "WM", y= "conectividade") +
++   theme_bw()
+Warning message:
+Ignoring unknown parameters: outlier.size 
+> 
+> ggplot(dados, aes(x = simon, y = LSC)) +
++   geom_point(alpha = 0.5, outlier.size = 2) +
++   labs(x= "IC", y= "conectividade") +
++   theme_bw()
+Warning message:
+Ignoring unknown parameters: outlier.size 
+> 
+> scatterplot3d(x=dados$ospan,      ## achei bonito
++               y=dados$LSC, 
++               z=dados$simon,
++               pch = 20,
++               angle = 50, 
++               type = 'h')
+>       
+>     
+>         
+> #5 estatistica descritiva da variavel resposta 
+> 
+> 
+> mean(dados$LSC)
+[1] 30.05797
+> sd(dados$LSC)
+[1] 18.83198
+> range(dados$LSC)
+[1]  1 95
+> median(dados$LSC)
+[1] 26
+> 
+> 
+> #'6 ## modelo estatistico
+> #'
+> #' pergunta: como memoria de trabalho e controle inibitorio predizem LSC?
+> 
+> ##ajuste de modelo 
+> 
+> modelo <- lm(LSC ~ ospan*simon, dados)
+> 
+> ##coeficientes do modelo
+> 
+> summary(modelo) 
+
+Call:
+lm(formula = LSC ~ ospan * simon, data = dados)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-31.209 -12.032  -1.963   7.882  62.758 
+
+Coefficients:
+              Estimate Std. Error t value Pr(>|t|)  
+(Intercept) -22.449216  21.956651  -1.022    0.310  
+ospan         1.195533   0.497141   2.405    0.019 *
+simon         0.506670   0.406967   1.245    0.218  
+ospan:simon  -0.011884   0.009577  -1.241    0.219  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 18.17 on 65 degrees of freedom
+Multiple R-squared:  0.1099,	Adjusted R-squared:  0.06881 
+F-statistic: 2.675 on 3 and 65 DF,  p-value: 0.05445
+
+> 
+> ################################################################################
+> 
+> ##ajuste de modelo sem interacao >> 
+> 
+> modelo2 <- lm(LSC ~ ospan+simon, dados)
+> 
+> ## comparacao entre os modelos
+> 
+> anova(modelo2, modelo)
+Analysis of Variance Table
+
+Model 1: LSC ~ ospan + simon
+Model 2: LSC ~ ospan * simon
+  Res.Df   RSS Df Sum of Sq      F Pr(>F)
+1     66 21974                           
+2     65 21466  1    508.52 1.5399 0.2191
+> 
+> 
+> #8 diagnosticos do modelo
+> 
+> autoplot(modelo) ## homocedasticidade - variancia a medida em que os valores aumentam 
+> vif(modelo)      ## VIF > 10, ha colinearidade  
+      ospan       simon ospan:simon 
+   3.568794   27.563104   28.107345 
+> shapiro.test(modelo$residuals)
+
+	Shapiro-Wilk normality test
+
+data:  modelo$residuals
+W = 0.91935, p-value = 0.0002741
+
+> 
+> ################################################################################
+> 
+> #' Escrita dos resultados 
+> #' 
+> #' jdsfhgsdjhgfjhsdgfjsdhfd
+> #' fjhsdgjshdfjdhfa
+> #' asjdhfbjshbfjahs
+> View(dadosLSC)
+Warning message:
+In vapply(units, is.null, logical(1)) : reached elapsed time limit
+> autoplot(modelo) ## homocedasticidade - variancia a medida em que os valores aumentam 
+> 
+> dados <- read.csv("dados/dados.csv")
+> str(dados)
+'data.frame':	69 obs. of  20 variables:
+ $ File    : chr  "201_span_picnic" "202_span_picnic" "203_span_picnic" "205_span_picnic" ...
+ $ WC      : int  39 25 78 31 31 23 52 46 39 48 ...
+ $ Nodes   : int  25 21 43 21 22 17 25 26 25 28 ...
+ $ Edges   : int  38 24 77 30 30 22 51 45 38 47 ...
+ $ RE      : int  1 1 11 1 1 0 7 6 2 4 ...
+ $ PE      : int  1 1 12 1 2 2 9 6 3 5 ...
+ $ L1      : int  0 1 0 0 0 1 1 0 0 0 ...
+ $ L2      : int  0 0 1 0 1 2 2 0 1 1 ...
+ $ L3      : int  5 1 8 1 2 0 7 5 3 5 ...
+ $ LCC     : int  25 21 43 21 22 17 25 26 25 28 ...
+ $ LSC     : int  24 9 42 20 18 14 25 24 23 25 ...
+ $ ATD     : num  3.04 2.29 3.58 2.86 2.73 ...
+ $ Density : num  0.123 0.105 0.072 0.138 0.121 ...
+ $ Diameter: int  5 15 6 6 8 7 5 4 6 6 ...
+ $ ASP     : num  2.76 5.66 3.01 2.68 3.32 ...
+ $ CC      : num  0.237 0.0683 0.1853 0.0525 0.0364 ...
+ $ ospan   : int  27 43 46 30 48 30 39 48 41 43 ...
+ $ X       : logi  NA NA NA NA NA NA ...
+ $ simon   : num  28.76 4.72 42.57 24.56 35.82 ...
+ $ wpm     : logi  NA NA NA NA NA NA ...
+> dadosLSC <- dados %>%
++   select(LSC,ospan,simon)%>%
++   droplevels()
+> ggplot(dados, aes(x = ospan, y = LSC)) +
++   geom_point(alpha = 0.5, outlier.size = 2) +
++   labs(x= "Ospan task", y= "LSC (conectividade)") +
++   theme_bw()
+Warning message:
+Ignoring unknown parameters: outlier.size 
+> ggplot(dados, aes(x = simon, y = LSC)) +
++   geom_point(alpha = 0.5, outlier.size = 2) +
++   labs(x= "Simon task", y= "LSC (conectividade)") +
++   theme_bw()
+Warning message:
+Ignoring unknown parameters: outlier.size 
+> scatterplot3d(x=dados$ospan,      ## achei bonito
+Warning message:
+In doTryCatch(return(expr), name, parentenv, handler) :
+  display list redraw incomplete
++               y=dados$LSC, 
++               z=dados$simon,
++               pch = 20,
++               angle = 50, 
++               type = 'h')
+> mean(dados$LSC)
+[1] 30.05797
+> sd(dados$LSC)
+[1] 18.83198
+> range(dados$LSC)
+[1]  1 95
+> median(dados$LSC)
+[1] 26
+> modelo <- lm(LSC ~ ospan*simon, dados)
+> summary(modelo) 
+
+Call:
+lm(formula = LSC ~ ospan * simon, data = dados)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-31.209 -12.032  -1.963   7.882  62.758 
+
+Coefficients:
+              Estimate Std. Error t value Pr(>|t|)  
+(Intercept) -22.449216  21.956651  -1.022    0.310  
+ospan         1.195533   0.497141   2.405    0.019 *
+simon         0.506670   0.406967   1.245    0.218  
+ospan:simon  -0.011884   0.009577  -1.241    0.219  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 18.17 on 65 degrees of freedom
+Multiple R-squared:  0.1099,	Adjusted R-squared:  0.06881 
+F-statistic: 2.675 on 3 and 65 DF,  p-value: 0.05445
+
+> modelo2 <- lm(LSC ~ ospan+simon, dados)
+> anova(modelo2, modelo)
+Analysis of Variance Table
+
+Model 1: LSC ~ ospan + simon
+Model 2: LSC ~ ospan * simon
+  Res.Df   RSS Df Sum of Sq      F Pr(>F)
+1     66 21974                           
+2     65 21466  1    508.52 1.5399 0.2191
+> autoplot(modelo) ## homocedasticidade - variancia a medida em que os valores aumentam 
+> vif(modelo)      ## VIF > 10, ha colinearidade  
+      ospan       simon ospan:simon 
+   3.568794   27.563104   28.107345 
+> shapiro.test(modelo$residuals)
+
+	Shapiro-Wilk normality test
+
+data:  modelo$residuals
+W = 0.91935, p-value = 0.0002741
